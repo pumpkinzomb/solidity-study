@@ -45,6 +45,7 @@ const SimpleCounter = (props) => {
     const [tokenAddress, setTokenAddress] = useState('');
     const [tokenName, setTokenName] = useState('');
     const [tokenSymbol, setTokenSymbol] = useState('');
+    const [tokenDecimals, setTokenDecimals] = useState('');
     const [tokenList, setTokenList] = useState([]);
     const [openDeposit, setOpenDeposit] = useState(false);
     const [openWithdraw, setOpenWithdraw] = useState(false);
@@ -119,7 +120,7 @@ const SimpleCounter = (props) => {
         try {
             const value = {};
             await Promise.all(
-                ['name', 'symbol'].map(async (item) => {
+                ['name', 'symbol', 'decimals'].map(async (item) => {
                     let getInfo;
                     if (item === 'name') {
                         getInfo = await TokenContract.methods.name().call({
@@ -129,15 +130,20 @@ const SimpleCounter = (props) => {
                         getInfo = await TokenContract.methods.symbol().call({
                             from: account,
                         });
+                    } else if (item === 'decimals') {
+                        getInfo = await TokenContract.methods.decimals().call({
+                            from: account,
+                        });
                     }
                     // console.log('check', getInfo);
                     value[`${item}`] = getInfo;
                     return getInfo;
                 }),
             );
-            const { name, symbol } = value;
+            const { name, symbol, decimals } = value;
             setTokenName(name);
             setTokenSymbol(symbol);
+            setTokenDecimals(decimals);
         } catch (error) {
             console.log(error);
         }
@@ -376,6 +382,15 @@ const SimpleCounter = (props) => {
                 <DialogContent>
                     <TextField
                         id="standard-basic"
+                        label="Token Address"
+                        variant="standard"
+                        sx={{ minWidth: '450px' }}
+                        value={tokenAddress}
+                        disabled={loading}
+                        onChange={handleTokenAddressChange}
+                    />
+                    <TextField
+                        id="standard-basic"
                         label="Token Name"
                         variant="standard"
                         sx={{ minWidth: '450px' }}
@@ -394,12 +409,11 @@ const SimpleCounter = (props) => {
                     />
                     <TextField
                         id="standard-basic"
-                        label="Token Address"
+                        label="Decimals"
                         variant="standard"
                         sx={{ minWidth: '450px' }}
-                        value={tokenAddress}
-                        disabled={loading}
-                        onChange={handleTokenAddressChange}
+                        value={tokenDecimals}
+                        disabled={true}
                     />
                 </DialogContent>
                 <DialogActions sx={{ padding: 2 }}>
