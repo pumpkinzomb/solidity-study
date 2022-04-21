@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
 import SyntaxHighlighter from 'react-syntax-highlighter';
@@ -103,6 +104,12 @@ const SimpleCounter = (props) => {
 
     return (
         <Box p={2}>
+            <Stack direction="row" sx={{ paddingBottom: 2 }} alignItems={'center'}>
+                <Typography variant="h4">Simple Using-Tx Counter!</Typography>
+                <Button variant="outlined" onClick={handleClickOpen} sx={{ textTransform: 'none', marginLeft: 2 }}>
+                    Open SimpleCounter.sol
+                </Button>
+            </Stack>
             <Stack direction="row" sx={{ paddingBottom: 2 }}>
                 {`Count: ${count}`}
                 <Box sx={{ marginLeft: 2 }}>
@@ -116,11 +123,6 @@ const SimpleCounter = (props) => {
                 <LoadingButton variant="outlined" onClick={decrease} loading={loading} disabled={loading}>
                     -1
                 </LoadingButton>
-            </Stack>
-            <Stack direction="row" sx={{ paddingTop: 2 }}>
-                <Button variant="outlined" onClick={handleClickOpen} sx={{ textTransform: 'none' }}>
-                    Open SimpleCounter.sol
-                </Button>
             </Stack>
             <Dialog open={open} onClose={handleClose} maxWidth={'xl'} fullWidth={true}>
                 <DialogTitle>Source Code (SimpleCounter.sol)</DialogTitle>

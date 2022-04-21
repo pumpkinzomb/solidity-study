@@ -28,6 +28,11 @@ function App() {
                         <ListItemText primary="Chapter 2 (Token Banker)" />
                     </Link>
                 </StyledListItem>
+                <StyledListItem disablePadding>
+                    <Link to="/chapter3">
+                        <ListItemText primary="Chapter 3 (Simple UniSwap 1Pool)" />
+                    </Link>
+                </StyledListItem>
             </List>
         </Box>
     );

@@ -272,7 +272,12 @@ const SimpleCounter = (props) => {
 
     return (
         <Box p={2}>
-            <Typography variant="h6">Welcome to ZombBank!</Typography>
+            <Stack direction="row" sx={{ paddingBottom: 2 }} alignItems={'center'}>
+                <Typography variant="h4">Welcome to ZombBank!</Typography>
+                <Button variant="outlined" onClick={handleSourceCodeOpen} sx={{ textTransform: 'none', marginLeft: 2 }}>
+                    Open SimpleBank.sol
+                </Button>
+            </Stack>
             <Stack direction="row" sx={{ paddingBottom: 2 }}>
                 <Box sx={{ marginLeft: 2 }}>{loading && 'Loading...'}</Box>
             </Stack>
@@ -359,11 +364,6 @@ const SimpleCounter = (props) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-            <Stack direction="row" sx={{ paddingTop: 2 }}>
-                <Button variant="outlined" onClick={handleSourceCodeOpen} sx={{ textTransform: 'none' }}>
-                    Open SimpleBank.sol
-                </Button>
-            </Stack>
             <Dialog open={openSourceCode} onClose={handleSourceCodeClose} maxWidth={'xl'} fullWidth={true}>
                 <DialogTitle>Source Code (SimpleBank.sol)</DialogTitle>
                 <StyledDialogContent sx={{ padding: 0 }}>
