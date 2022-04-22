@@ -24,7 +24,7 @@ import Tooltip from '@mui/material/Tooltip';
 
 import { ABI, CA } from './contract';
 import { TOKEN_ABI } from '../chapter2/tokenContract';
-import { sourceCode } from './SimpleSingleUniswap.sol';
+import { sourceCode } from './SingleUniswap_with_native.sol';
 
 export const StyledDialogContent = styled(DialogContent)(
     (props) => `
@@ -39,7 +39,6 @@ const web3 = new Web3(Web3.givenProvider || 'https://ropsten.infura.io/v3/a07cd9
 let Contract;
 let TokenContract;
 const P_TOKEN_A = '0x86e9370D10A4220e82Fd9F7D61E85c6322cf80C7';
-const Z_TOKEN_A = '0x74d512263322194886B8471EC5C3494Ba7A947F2';
 const SinglePool = (props) => {
     const [loading, setLoading] = useState(false);
     const [account, setAccount] = useState(null);
@@ -47,35 +46,45 @@ const SinglePool = (props) => {
     const [openManageLiquidity, setOpenMangeLiquidity] = useState(false);
     const [pTokenAmount, setPTokenAmount] = useState('0');
     const [maxPToken, setMaxPToken] = useState('0');
-    const [zTokenAmount, setZTokenAmount] = useState('0');
-    const [maxZToken, setMaxZToken] = useState('0');
+    const [ethTokenAmount, setEthTokenAmount] = useState('0');
+    const [maxEthToken, setMaxEthToken] = useState('0');
     const [poolPTokenAmount, setPoolPTokenAmount] = useState('0');
-    const [poolZTokenAmount, setPoolZTokenAmount] = useState('0');
+    const [poolEthTokenAmount, setPoolEthTokenAmount] = useState('0');
     const [poolLiquidity, setPoolLiquidity] = useState('0');
     const [myLiquidity, setMyLiquidity] = useState('0');
     const [selectedTab, setSelectedTab] = useState(0);
     const [removeLiquidity, setRemoveLiquidity] = useState('0');
     const [openSwapToken, setOpenSwapToken] = useState(false);
     const [selectedSwapTokenTab, setSelectedSwapTokenTab] = useState(0);
-    const [pToZSlippage, setPtoZSlippage] = useState(0);
-    const [swappedZTokenAmount, setSwappedZTokenAmount] = useState(0);
-    const [zToPSlippage, setZtoPSlippage] = useState(0);
+    const [pToEthSlippage, setPtoEthSlippage] = useState(0);
+    const [swappedEthTokenAmount, setSwappedEthTokenAmount] = useState(0);
+    const [ethToPSlippage, setEthtoPSlippage] = useState(0);
     const [swappedPTokenAmount, setSwappedPTokenAmount] = useState(0);
     const [pTokenAddressIsCopied, setPTokenCopied] = useClipboard(P_TOKEN_A);
-    const [zTokenAddressIsCopied, setZTokenCopied] = useClipboard(Z_TOKEN_A);
 
     useEffect(() => {
         getAccounts();
     }, []);
 
     const getTokenBalance = async (tokenAddress, account) => {
-        TokenContract = new web3.eth.Contract(TOKEN_ABI, tokenAddress);
-        try {
-            const balance = await TokenContract.methods.balanceOf(account).call();
-            return Web3.utils.fromWei(balance, 'ether');
-        } catch (error) {
-            console.log('error: ', error);
-            return 0;
+        if (tokenAddress === P_TOKEN_A) {
+            TokenContract = new web3.eth.Contract(TOKEN_ABI, tokenAddress);
+            try {
+                const balance = await TokenContract.methods.balanceOf(account).call();
+                return Web3.utils.fromWei(balance, 'ether');
+            } catch (error) {
+                console.log('error: ', error);
+                return 0;
+            }
+        } else {
+            // get eth balance
+            try {
+                const balance = await web3.eth.getBalance(account);
+                return Web3.utils.fromWei(balance, 'ether');
+            } catch (error) {
+                console.log('error: ', error);
+                return 0;
+            }
         }
     };
 
@@ -84,7 +93,7 @@ const SinglePool = (props) => {
             const poolLiquidity = await Contract.methods.getPoolInfo().call();
             // console.log('check', poolLiquidity);
             setPoolPTokenAmount(poolLiquidity[0]);
-            setPoolZTokenAmount(poolLiquidity[1]);
+            setPoolEthTokenAmount(poolLiquidity[1]);
             setPoolLiquidity(poolLiquidity[2]);
         } catch (error) {
             console.log(error);
@@ -105,23 +114,23 @@ const SinglePool = (props) => {
     const getAllTokenBalance = async (_account) => {
         const getAccount = _account || account;
         await Promise.all(
-            [P_TOKEN_A, Z_TOKEN_A].map(async (item) => {
+            [P_TOKEN_A, 'Eth'].map(async (item) => {
                 let balance = await getTokenBalance(item, getAccount);
                 balance = String(Number(balance).toFixed(2));
                 if (item === P_TOKEN_A) {
                     setMaxPToken(balance);
-                } else if (Z_TOKEN_A) {
-                    setMaxZToken(balance);
+                } else if ('Eth') {
+                    setMaxEthToken(balance);
                 }
                 return item;
             }),
         );
     };
 
-    const handleSetPool = async (tokenA, tokenB) => {
+    const handleSetPool = async (tokenA) => {
         setLoading(true);
         try {
-            await Contract.methods.setPool(tokenA, tokenB).send({
+            await Contract.methods.setPool(tokenA).send({
                 from: account,
             });
         } catch (error) {
@@ -166,7 +175,7 @@ const SinglePool = (props) => {
 
     const initLiquidity = () => {
         setPTokenAmount('0');
-        setZTokenAmount('0');
+        setEthTokenAmount('0');
         setRemoveLiquidity('0');
     };
 
@@ -191,13 +200,13 @@ const SinglePool = (props) => {
                 if (amount > Number(maxPToken)) {
                     amount = maxPToken;
                 }
-                amountZTokenCalcRatio(amount);
+                amountEthTokenCalcRatio(amount);
             } else {
                 setPTokenAmount('0');
             }
         } else {
             if (!isNaN(Number(amount))) {
-                amountZTokenCalcRatio(amount);
+                amountEthTokenCalcRatio(amount);
             } else {
                 setPTokenAmount(amount);
             }
@@ -205,60 +214,60 @@ const SinglePool = (props) => {
     };
 
     const handlePSliderChange = (event, newValue) => {
-        amountZTokenCalcRatio(newValue);
+        amountEthTokenCalcRatio(newValue);
     };
 
-    const amountZTokenCalcRatio = (pAmount) => {
+    const amountEthTokenCalcRatio = (pAmount) => {
         if (Number(poolLiquidity) !== 0) {
-            let calc = pAmount * (Number(poolZTokenAmount) / Number(poolPTokenAmount));
-            if (calc > Number(maxZToken)) {
-                pAmount = Number(maxZToken) * (Number(poolPTokenAmount) / Number(poolZTokenAmount));
-                calc = Number(maxZToken);
+            let calc = pAmount * (Number(poolEthTokenAmount) / Number(poolPTokenAmount));
+            if (calc > Number(maxEthToken)) {
+                pAmount = Number(maxEthToken) * (Number(poolPTokenAmount) / Number(poolEthTokenAmount));
+                calc = Number(maxEthToken);
             }
             // console.log('check', calc, pAmount);
-            setZTokenAmount(String(calc.toFixed(2)));
+            setEthTokenAmount(String(calc.toFixed(2)));
             setPTokenAmount(String(pAmount));
         } else {
             setPTokenAmount(String(pAmount));
         }
     };
 
-    const amountPTokenCalcRatio = (zAmount) => {
+    const amountPTokenCalcRatio = (ethAmount) => {
         if (Number(poolLiquidity) !== 0) {
-            let calc = zAmount * (Number(poolPTokenAmount) / Number(poolZTokenAmount));
+            let calc = ethAmount * (Number(poolPTokenAmount) / Number(poolEthTokenAmount));
             if (calc > Number(maxPToken)) {
-                zAmount = Number(maxPToken) * (Number(poolZTokenAmount) / Number(poolPTokenAmount));
+                ethAmount = Number(maxPToken) * (Number(poolEthTokenAmount) / Number(poolPTokenAmount));
                 calc = Number(maxPToken);
             }
             setPTokenAmount(String(calc.toFixed(2)));
-            setZTokenAmount(String(zAmount));
+            setEthTokenAmount(String(ethAmount));
         } else {
-            setZTokenAmount(String(zAmount));
+            setEthTokenAmount(String(ethAmount));
         }
     };
 
-    const handleZTokenChange = (event) => {
+    const handleEthTokenChange = (event) => {
         let amount = event.target.value;
         if (amount.includes('.') && amount.length > 2) {
             if (!isNaN(Number(amount))) {
                 amount = Number(amount);
-                if (amount > Number(maxZToken)) {
-                    amount = maxZToken;
+                if (amount > Number(maxEthToken)) {
+                    amount = maxEthToken;
                 }
                 amountPTokenCalcRatio(amount);
             } else {
-                setZTokenAmount('0');
+                setEthTokenAmount('0');
             }
         } else {
             if (!isNaN(Number(amount))) {
                 amountPTokenCalcRatio(amount);
             } else {
-                setZTokenAmount(amount);
+                setEthTokenAmount(amount);
             }
         }
     };
 
-    const handleZSliderChange = (event, newValue) => {
+    const handleEthSliderChange = (event, newValue) => {
         amountPTokenCalcRatio(newValue);
     };
 
@@ -266,17 +275,17 @@ const SinglePool = (props) => {
         setLoading(true);
         try {
             const pToken = Web3.utils.toWei(pTokenAmount, 'ether');
-            const zToken = Web3.utils.toWei(zTokenAmount, 'ether');
-
-            await Contract.methods.addLiquidity(pToken, zToken).send({ from: account });
+            const ethToken = Web3.utils.toWei(ethTokenAmount, 'ether');
+            await Contract.methods.addLiquidity(pToken, ethToken).send({ from: account, value: ethToken });
             getPoolLiquidity();
             getOwnLiquidity();
+            setLoading(false);
             getAllTokenBalance(account);
+            handleLiquidityClose();
         } catch (error) {
             console.log(error);
+            setLoading(false);
         }
-        setLoading(false);
-        handleLiquidityClose();
     };
 
     const handleTabSelect = (event, newValue) => {
@@ -315,10 +324,10 @@ const SinglePool = (props) => {
     const handleCloseSwapToken = () => {
         setOpenSwapToken(false);
         setPTokenAmount('0');
-        setZTokenAmount('0');
-        setZtoPSlippage(0);
-        setPtoZSlippage(0);
-        setSwappedZTokenAmount(0);
+        setEthTokenAmount('0');
+        setEthtoPSlippage(0);
+        setPtoEthSlippage(0);
+        setSwappedEthTokenAmount(0);
         setSwappedPTokenAmount(0);
         setSelectedSwapTokenTab(0);
     };
@@ -326,13 +335,13 @@ const SinglePool = (props) => {
     const handleSwapPSliderChange = (event, newValue) => {
         if (Number(poolLiquidity) !== 0) {
             const x = Number(Web3.utils.fromWei(poolPTokenAmount, 'ether'));
-            const y = Number(Web3.utils.fromWei(poolZTokenAmount, 'ether'));
+            const y = Number(Web3.utils.fromWei(poolEthTokenAmount, 'ether'));
             const z = newValue;
             const slippage = calcSlippage(x, y, x * y, z);
             // console.log('slippage', slippage);
-            setPtoZSlippage(slippage.toFixed(2));
+            setPtoEthSlippage(slippage.toFixed(2));
             setPTokenAmount(String(newValue));
-            setSwappedZTokenAmount(y - (x * y) / (x + z));
+            setSwappedEthTokenAmount(y - (x * y) / (x + z));
         } else {
             setPTokenAmount('0');
         }
@@ -360,54 +369,54 @@ const SinglePool = (props) => {
             }
         }
         const x = Number(Web3.utils.fromWei(poolPTokenAmount, 'ether'));
-        const y = Number(Web3.utils.fromWei(poolZTokenAmount, 'ether'));
+        const y = Number(Web3.utils.fromWei(poolEthTokenAmount, 'ether'));
         const z = Number(amount);
         const slippage = calcSlippage(x, y, x * y, z);
-        setPtoZSlippage(slippage.toFixed(2));
-        setSwappedZTokenAmount(y - (x * y) / (x + z));
+        setPtoEthSlippage(slippage.toFixed(2));
+        setSwappedEthTokenAmount(y - (x * y) / (x + z));
     };
 
-    const handleSwapZSliderChange = (event, newValue) => {
+    const handleSwapEthSliderChange = (event, newValue) => {
         if (Number(poolLiquidity) !== 0) {
-            const x = Number(Web3.utils.fromWei(poolZTokenAmount, 'ether'));
+            const x = Number(Web3.utils.fromWei(poolEthTokenAmount, 'ether'));
             const y = Number(Web3.utils.fromWei(poolPTokenAmount, 'ether'));
             const z = newValue;
             const slippage = calcSlippage(x, y, x * y, z);
-            setZtoPSlippage(slippage.toFixed(2));
-            setZTokenAmount(String(newValue));
+            setEthtoPSlippage(slippage.toFixed(2));
+            setEthTokenAmount(String(newValue));
             setSwappedPTokenAmount(y - (x * y) / (x + z));
         } else {
-            setZTokenAmount('0');
+            setEthTokenAmount('0');
         }
     };
 
-    const handleSwapZTokenChange = (event) => {
+    const handleSwapEthTokenChange = (event) => {
         let amount = event.target.value;
         if (amount.includes('.') && amount.length > 2) {
             if (!isNaN(Number(amount))) {
                 amount = Number(amount);
-                if (amount > Number(maxZToken)) {
-                    amount = maxZToken;
+                if (amount > Number(maxEthToken)) {
+                    amount = maxEthToken;
                 }
-                setZTokenAmount(String(amount));
+                setEthTokenAmount(String(amount));
             } else {
-                setZTokenAmount('0');
+                setEthTokenAmount('0');
             }
         } else {
             if (!isNaN(Number(amount))) {
-                if (Number(amount) > Number(maxZToken)) {
-                    amount = maxZToken;
+                if (Number(amount) > Number(maxEthToken)) {
+                    amount = maxEthToken;
                 }
-                setZTokenAmount(amount);
+                setEthTokenAmount(amount);
             } else {
-                setZTokenAmount(amount);
+                setEthTokenAmount(amount);
             }
         }
-        const x = Number(Web3.utils.fromWei(poolZTokenAmount, 'ether'));
+        const x = Number(Web3.utils.fromWei(poolEthTokenAmount, 'ether'));
         const y = Number(Web3.utils.fromWei(poolPTokenAmount, 'ether'));
         const z = Number(amount);
         const slippage = calcSlippage(x, y, x * y, z);
-        setZtoPSlippage(slippage.toFixed(2));
+        setEthtoPSlippage(slippage.toFixed(2));
         setSwappedPTokenAmount(y - (x * y) / (x + z));
     };
 
@@ -430,13 +439,14 @@ const SinglePool = (props) => {
         setLoading(true);
         try {
             if (selectedSwapTokenTab === 0) {
+                // eth to p
+
+                const ethToken = Web3.utils.toWei(ethTokenAmount, 'ether');
+                await Contract.methods.swapBtoA(ethToken).send({ from: account, value: ethToken });
+            } else if (selectedSwapTokenTab === 1) {
+                // p to eth
                 const pToken = Web3.utils.toWei(pTokenAmount, 'ether');
                 await Contract.methods.swapAtoB(pToken).send({ from: account });
-                // p to z
-            } else if (selectedSwapTokenTab === 1) {
-                const zToken = Web3.utils.toWei(zTokenAmount, 'ether');
-                await Contract.methods.swapBtoA(zToken).send({ from: account });
-                // z to p
             }
             setLoading(false);
             getPoolLiquidity();
@@ -450,18 +460,22 @@ const SinglePool = (props) => {
 
     const handleSwapTokenTabSelect = (event, newValue) => {
         setPTokenAmount('0');
-        setZTokenAmount('0');
-        setZtoPSlippage(0);
-        setPtoZSlippage(0);
-        setSwappedZTokenAmount(0);
+        setEthTokenAmount('0');
+        setEthtoPSlippage(0);
+        setPtoEthSlippage(0);
+        setSwappedEthTokenAmount(0);
         setSwappedPTokenAmount(0);
         setSelectedSwapTokenTab(newValue);
     };
 
+    console.log('my p', maxPToken);
+    console.log('my eth', maxEthToken);
+    console.log('p token', pTokenAmount);
+    console.log('eth token', ethTokenAmount);
     return (
         <Box p={2}>
             <Stack direction="row" sx={{ paddingBottom: 2 }} alignItems={'center'}>
-                <Typography variant="h4">Uniswap Single Pool</Typography>
+                <Typography variant="h4">Uniswap Single Pool (With NativeToken)</Typography>
                 <Button variant="outlined" onClick={handleSourceCodeOpen} sx={{ textTransform: 'none', marginLeft: 2 }}>
                     Open SingleUniswap.sol
                 </Button>
@@ -470,25 +484,20 @@ const SinglePool = (props) => {
                 <Box sx={{ marginLeft: 2 }}>{loading && 'Loading...'}</Box>
             </Stack>
             <Stack direction="row" sx={{ paddingBottom: 2 }} spacing={1}>
-                <LoadingButton
-                    variant="contained"
-                    onClick={() => handleSetPool(P_TOKEN_A, Z_TOKEN_A)}
-                    loading={loading}
-                    disabled={true}
-                >
-                    Setting Pool (Already Set)
+                <LoadingButton variant="contained" onClick={() => handleSetPool(P_TOKEN_A)} loading={loading}>
+                    Setting Pool
                 </LoadingButton>
                 <LoadingButton variant="contained" onClick={() => handleApproveToken(P_TOKEN_A)} loading={loading}>
                     Approve PMPKT1
                 </LoadingButton>
-                <LoadingButton variant="contained" onClick={() => handleApproveToken(Z_TOKEN_A)} loading={loading}>
-                    Approve ZMBT1
-                </LoadingButton>
             </Stack>
             <Stack direction="row" sx={{ paddingBottom: 2 }} spacing={2} alignItems={'center'}>
                 <Typography variant="h6" alignItems={'center'}>
-                    Pool #1 :
+                    Pool #2 :
                 </Typography>
+                <Stack direction="row" spacing={2} alignItems={'center'}>
+                    Ethereum (NativeToken) /
+                </Stack>
                 <Stack direction="row" spacing={2} alignItems={'center'}>
                     PMPKT1
                     <Tooltip title="Copy PMPKT1 Token Address.">
@@ -497,16 +506,6 @@ const SinglePool = (props) => {
                         </IconButton>
                     </Tooltip>
                 </Stack>
-                {' / '}
-                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ marginRight: 2 }}>
-                    ZMBT1
-                    <Tooltip title="Copy ZMBT1 Token Address.">
-                        <IconButton aria-label="Copy ZMBT1 Token Address." onClick={setZTokenCopied}>
-                            <ContentCopyIcon fontSize="small" />
-                        </IconButton>
-                    </Tooltip>
-                </Stack>
-
                 <Button
                     variant="contained"
                     onClick={handleLiquidityOpen}
@@ -545,11 +544,11 @@ const SinglePool = (props) => {
                     <Typography variant="body1" color={'#757575'}>
                         Total Bonded
                     </Typography>
-                    <Typography variant="h6">{`${Number(Web3.utils.fromWei(poolPTokenAmount, 'ether')).toFixed(
+                    <Typography variant="h6">{`${Number(Web3.utils.fromWei(poolEthTokenAmount, 'ether')).toFixed(
                         3,
-                    )} (PMPKT1) / ${Number(Web3.utils.fromWei(poolZTokenAmount, 'ether')).toFixed(
+                    )} (Eth) / ${Number(Web3.utils.fromWei(poolPTokenAmount, 'ether')).toFixed(
                         3,
-                    )} (ZMBT1)`}</Typography>
+                    )} (PMPKT1)`}</Typography>
                 </Stack>
             </Stack>
             <Dialog open={openSourceCode} onClose={handleSourceCodeClose} maxWidth={'xl'} fullWidth={true}>
@@ -578,6 +577,27 @@ const SinglePool = (props) => {
                         <React.Fragment>
                             <Stack direction="row" sx={{ marginTop: 2 }} alignItems={'center'}>
                                 <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
+                                    Eth:
+                                </Typography>
+                                <Slider
+                                    aria-label="Eth"
+                                    value={Number(ethTokenAmount)}
+                                    valueLabelDisplay="auto"
+                                    onChange={handleEthSliderChange}
+                                    step={0.1}
+                                    max={Number(maxEthToken)}
+                                    disabled={loading}
+                                />
+                            </Stack>
+                            <TextField
+                                id="standard-basic"
+                                variant="standard"
+                                sx={{ minWidth: '450px' }}
+                                value={ethTokenAmount}
+                                onChange={handleEthTokenChange}
+                            />
+                            <Stack direction="row" alignItems={'center'} sx={{ paddingTop: 2 }}>
+                                <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
                                     PMPKT1:
                                 </Typography>
                                 <Slider
@@ -596,27 +616,6 @@ const SinglePool = (props) => {
                                 sx={{ minWidth: '450px' }}
                                 value={pTokenAmount}
                                 onChange={handlePTokenChange}
-                            />
-                            <Stack direction="row" alignItems={'center'} sx={{ paddingTop: 2 }}>
-                                <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
-                                    ZMBT1:
-                                </Typography>
-                                <Slider
-                                    aria-label="ZMBT1"
-                                    value={Number(zTokenAmount)}
-                                    valueLabelDisplay="auto"
-                                    onChange={handleZSliderChange}
-                                    step={0.1}
-                                    max={Number(maxZToken)}
-                                    disabled={loading}
-                                />
-                            </Stack>
-                            <TextField
-                                id="standard-basic"
-                                variant="standard"
-                                sx={{ minWidth: '450px' }}
-                                value={zTokenAmount}
-                                onChange={handleZTokenChange}
                             />
                         </React.Fragment>
                     ) : (
@@ -642,11 +641,11 @@ const SinglePool = (props) => {
                             loading={loading}
                             disabled={
                                 pTokenAmount === '0' ||
-                                zTokenAmount === '0' ||
+                                ethTokenAmount === '0' ||
                                 isNaN(Number(pTokenAmount)) ||
-                                isNaN(Number(zTokenAmount)) ||
+                                isNaN(Number(ethTokenAmount)) ||
                                 pTokenAmount.length < 1 ||
-                                zTokenAmount.length < 1
+                                ethTokenAmount.length < 1
                             }
                         >
                             Add Liquidity
@@ -676,13 +675,44 @@ const SinglePool = (props) => {
                             onChange={handleSwapTokenTabSelect}
                             aria-label="basic tabs example"
                         >
-                            <Tab label="P to Z" />
-                            <Tab label="Z to P" />
+                            <Tab label="Eth to P" />
+                            <Tab label="P to Eth" />
                         </Tabs>
                     </Box>
                     {selectedSwapTokenTab === 0 ? (
                         <React.Fragment>
                             <Stack direction="row" sx={{ marginTop: 4 }} alignItems={'center'}>
+                                <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
+                                    Eth:
+                                </Typography>
+                                <Slider
+                                    aria-label="Eth"
+                                    value={Number(ethTokenAmount)}
+                                    valueLabelDisplay="auto"
+                                    onChange={handleSwapEthSliderChange}
+                                    step={0.1}
+                                    max={Number(maxEthToken)}
+                                    disabled={loading}
+                                />
+                            </Stack>
+                            <TextField
+                                id="standard-basic"
+                                variant="standard"
+                                sx={{ minWidth: '450px' }}
+                                value={ethTokenAmount}
+                                onChange={handleSwapEthTokenChange}
+                                disabled={loading}
+                            />
+                            <Typography variant="body2" sx={{ marginTop: 2 }}>
+                                slippage: {ethToPSlippage}%
+                            </Typography>
+                            <Typography variant="body2" sx={{ marginTop: 2 }}>
+                                교환되어질 P토큰 갯수: {swappedPTokenAmount}
+                            </Typography>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <Stack direction="row" alignItems={'center'} sx={{ paddingTop: 2 }}>
                                 <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
                                     PMPKT1:
                                 </Typography>
@@ -705,41 +735,10 @@ const SinglePool = (props) => {
                                 disabled={loading}
                             />
                             <Typography variant="body2" sx={{ marginTop: 2 }}>
-                                slippage: {pToZSlippage}%
+                                slippage: {pToEthSlippage}%
                             </Typography>
                             <Typography variant="body2" sx={{ marginTop: 2 }}>
-                                교환되어질 Z토큰 갯수: {swappedZTokenAmount}
-                            </Typography>
-                        </React.Fragment>
-                    ) : (
-                        <React.Fragment>
-                            <Stack direction="row" alignItems={'center'} sx={{ paddingTop: 2 }}>
-                                <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
-                                    ZMBT1:
-                                </Typography>
-                                <Slider
-                                    aria-label="ZMBT1"
-                                    value={Number(zTokenAmount)}
-                                    valueLabelDisplay="auto"
-                                    onChange={handleSwapZSliderChange}
-                                    step={0.1}
-                                    max={Number(maxZToken)}
-                                    disabled={loading}
-                                />
-                            </Stack>
-                            <TextField
-                                id="standard-basic"
-                                variant="standard"
-                                sx={{ minWidth: '450px' }}
-                                value={zTokenAmount}
-                                onChange={handleSwapZTokenChange}
-                                disabled={loading}
-                            />
-                            <Typography variant="body2" sx={{ marginTop: 2 }}>
-                                slippage: {zToPSlippage}%
-                            </Typography>
-                            <Typography variant="body2" sx={{ marginTop: 2 }}>
-                                교환되어질 P토큰 갯수: {swappedPTokenAmount}
+                                교환되어질 Eth 갯수: {swappedEthTokenAmount}
                             </Typography>
                         </React.Fragment>
                     )}
@@ -750,8 +749,8 @@ const SinglePool = (props) => {
                         onClick={handleSwapTokenSubmit}
                         loading={loading}
                         disabled={
-                            (selectedSwapTokenTab === 0 && Number(pTokenAmount) === 0) ||
-                            (selectedSwapTokenTab === 1 && Number(zTokenAmount) === 0)
+                            (selectedSwapTokenTab === 0 && Number(ethTokenAmount) === 0) ||
+                            (selectedSwapTokenTab === 1 && Number(pTokenAmount) === 0)
                         }
                     >
                         Swap Tokens
