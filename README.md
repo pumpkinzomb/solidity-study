@@ -2,7 +2,7 @@
 
 solidity를 공부하면서 만드는 간단한 dapp들 실습한다.
 
-## How to project settings
+## How to set this project
 
 ```
     git clone git@github.com:pumpkinzomb/solidity-study.git
