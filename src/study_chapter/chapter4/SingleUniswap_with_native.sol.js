@@ -15,8 +15,7 @@ contract SingleUniswapWithNative {
 
     uint public initialized = 0;
 
-    constructor () payable {
-    }
+    constructor () payable {}
 
     function setPool(address _token0) public {
         require(initialized == 0);
@@ -25,6 +24,12 @@ contract SingleUniswapWithNative {
         reserve1 = 0;
         totalSupply = 0;
         initialized = 1;
+    }
+    
+    event received(address, uint256);
+
+    receive() external payable {
+        emit received(msg.sender, msg.value);
     }
 
     function getPoolInfo() public view returns (uint256, uint256, uint256){
@@ -35,7 +40,7 @@ contract SingleUniswapWithNative {
         _liqudity = balances[a];
     }
 
-    function addLiquidity(uint256 _amount0, uint256 _amount1) public{
+    function addLiquidity(uint256 _amount0, uint256 _amount1) public payable{
         require(initialized == 1);
         uint256 liquidity;
         address payable CA_address = payable(address(this));
@@ -43,9 +48,6 @@ contract SingleUniswapWithNative {
             liquidity = Math.sqrt(_amount0 * _amount1);
         }
         else {
-            //uint256 inputRatio = _amount0/_amount1;
-            //uint256 reserveRatio = reserve0/_reserve1;
-            //require( inputRatio >> 3 == reserveRatio >> 3);
             liquidity = Math.min(_amount0 * totalSupply / reserve0, _amount1 * totalSupply / reserve1);
         }
 
@@ -61,8 +63,7 @@ contract SingleUniswapWithNative {
 
    
 
-    function removeLiquidity(uint256 _liquidityAmount) public {
-        // require(_liquidityAmount > balances[msg.sender]);
+    function removeLiquidity(uint256 _liquidityAmount) public payable{
         uint256 balance0 = _liquidityAmount * reserve0 / totalSupply;
         uint256 balance1 = _liquidityAmount * reserve1 / totalSupply;
         address payable msgSender = payable(msg.sender);
@@ -76,7 +77,7 @@ contract SingleUniswapWithNative {
          emit removeLiquidityLog(balance0, balance1, reserve0, reserve1, totalSupply);
     }
 
-    function swapAtoB(uint256 amountA) public {
+    function swapAtoB(uint256 amountA) public payable{
         address payable msgSender = payable(msg.sender);
         // Tranfer tokens from sender to this contract
         IERC20(token0).transferFrom(msg.sender, address(this), amountA);
@@ -92,7 +93,7 @@ contract SingleUniswapWithNative {
         emit swapAtoBLog(reserve0, reserve1, totalSupply);
     }
 
-    function swapBtoA(uint256 amountB) public {
+    function swapBtoA(uint256 amountB) public payable{
         // Tranfer tokens from sender to this contract
         address payable CA_address = payable(address(this));
         CA_address.transfer(amountB);
