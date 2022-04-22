@@ -484,7 +484,12 @@ const SinglePool = (props) => {
                 <Box sx={{ marginLeft: 2 }}>{loading && 'Loading...'}</Box>
             </Stack>
             <Stack direction="row" sx={{ paddingBottom: 2 }} spacing={1}>
-                <LoadingButton variant="contained" onClick={() => handleSetPool(P_TOKEN_A)} loading={loading}>
+                <LoadingButton
+                    variant="contained"
+                    onClick={() => handleSetPool(P_TOKEN_A)}
+                    loading={loading}
+                    disabled={true}
+                >
                     Setting Pool
                 </LoadingButton>
                 <LoadingButton variant="contained" onClick={() => handleApproveToken(P_TOKEN_A)} loading={loading}>
