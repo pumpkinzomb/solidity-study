@@ -34,7 +34,7 @@ function App() {
                     </Link>
                 </StyledListItem>
                 <StyledListItem disablePadding>
-                    <Link to="/chapter3">
+                    <Link to="/chapter4">
                         <ListItemText primary="Chapter 4 (Single Uniswap Eth to ERC20)" />
                     </Link>
                 </StyledListItem>
