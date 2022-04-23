@@ -1,0 +1,40 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/Users/felixzomb/Desktop/workspace/solidity-practice/hardhat/contracts/SimpleCounter.sol": {
+      "lastModificationDate": 1650635356693,
+      "contentHash": "eb3d8c2ee1673b3072bfc8836632721d",
+      "sourceName": "contracts/SimpleCounter.sol",
+      "solcConfig": {
+        "version": "0.8.8",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "SimpleCounter"
+      ]
+    }
+  }
+}

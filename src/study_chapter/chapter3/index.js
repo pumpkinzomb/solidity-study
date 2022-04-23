@@ -32,7 +32,6 @@ export const StyledDialogContent = styled(DialogContent)(
   `,
 );
 
-const BigNumber = require('big-number');
 const Web3 = require('web3');
 const web3 = new Web3(Web3.givenProvider || 'https://ropsten.infura.io/v3/a07cd96ad0bb435f9e750c8faa672052');
 

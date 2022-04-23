@@ -1,9 +1,26 @@
 const webpack = require('webpack');
+const CracoAlias = require('craco-alias');
+const path = require('path');
 
 module.exports = {
+    plugins: [
+        {
+            plugin: CracoAlias,
+            options: {
+                source: 'jsconfig',
+                jsConfigPath: 'jsconfig.paths.json',
+            },
+        },
+    ],
     webpack: {
-        configure: {
-            resolve: {
+        configure: (webpackConfig) => {
+            const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(
+                ({ constructor }) => constructor && constructor.name === 'ModuleScopePlugin',
+            );
+            webpackConfig.resolve.plugins.splice(scopePluginIndex, 1);
+
+            webpackConfig.resolve = {
+                ...webpackConfig.resolve,
                 fallback: {
                     process: require.resolve('process/browser'),
                     zlib: require.resolve('browserify-zlib'),
@@ -18,13 +35,18 @@ module.exports = {
                     crypto: require.resolve('crypto-browserify'),
                     url: require.resolve('url'),
                 },
-            },
-            plugins: [
+                alias: {
+                    '@/hardhat': path.resolve(__dirname, '../../../hardhat/'),
+                },
+            };
+            webpackConfig.plugins = [
+                ...webpackConfig.plugins,
                 new webpack.ProvidePlugin({
                     Buffer: ['buffer', 'Buffer'],
                     process: 'process/browser',
                 }),
-            ],
+            ];
+            return webpackConfig;
         },
     },
 };

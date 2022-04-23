@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
+import Axios from 'axios';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -14,7 +15,9 @@ import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useStopwatch } from 'react-timer-hook';
 
 import { ABI, CA } from './contract';
-import { sourceCode } from './SimpleCounter.sol';
+
+// import code2 from '../../../hardhat/contracts/SimpleCounter.sol';
+import code from '@/hardhat/contracts/SimpleCounter.sol';
 
 export const StyledDialogContent = styled(DialogContent)(
     (props) => `
@@ -31,11 +34,13 @@ const SimpleCounter = (props) => {
     const [loading, setLoading] = useState(false);
     const [account, setAccount] = useState([]);
     const [open, setOpen] = useState(false);
+    const [sourceCode, setSourceCode] = useState('');
 
     const { seconds, minutes, hours, days, isRunning, start, pause, reset } = useStopwatch({ autoStart: false });
 
     useEffect(() => {
         getAccounts();
+        getSourceCode();
     }, []);
 
     const getCounter = async (_account) => {
@@ -49,11 +54,16 @@ const SimpleCounter = (props) => {
         setLoading(false);
     };
 
+    const getSourceCode = async () => {
+        const response = await Axios(code);
+        setSourceCode(response.data);
+    };
+
     const getAccounts = async () => {
         try {
             await window.ethereum.enable();
             const _account = await web3.eth.getAccounts();
-            console.log('check', _account);
+            // console.log('check', _account);
             Contract = new web3.eth.Contract(ABI, CA);
             setAccount(_account[0]);
             getCounter(_account[0]);
