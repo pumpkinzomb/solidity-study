@@ -38,6 +38,11 @@ function App() {
                         <ListItemText primary="Chapter 4 (Single Uniswap Eth to ERC20)" />
                     </Link>
                 </StyledListItem>
+                <StyledListItem disablePadding>
+                    <Link to="/chapter5">
+                        <ListItemText primary="Chapter 5 (Simple Remix IDE)" />
+                    </Link>
+                </StyledListItem>
             </List>
         </Box>
     );

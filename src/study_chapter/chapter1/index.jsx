@@ -14,10 +14,10 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useStopwatch } from 'react-timer-hook';
 
-import { ABI, CA } from './contract';
+import { CA } from './contract';
 
-// import code2 from '../../../hardhat/contracts/SimpleCounter.sol';
-import code from '@/hardhat/contracts/SimpleCounter.sol';
+import getCode from '@/hardhat/contracts/SimpleCounter.sol';
+import getABI from '@/hardhat/artifacts/contracts/SimpleCounter.sol/SimpleCounter.json';
 
 export const StyledDialogContent = styled(DialogContent)(
     (props) => `
@@ -55,15 +55,15 @@ const SimpleCounter = (props) => {
     };
 
     const getSourceCode = async () => {
-        const response = await Axios(code);
+        const response = await Axios(getCode);
         setSourceCode(response.data);
     };
 
     const getAccounts = async () => {
         try {
-            await window.ethereum.enable();
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
             const _account = await web3.eth.getAccounts();
-            // console.log('check', _account);
+            const ABI = getABI.abi;
             Contract = new web3.eth.Contract(ABI, CA);
             setAccount(_account[0]);
             getCounter(_account[0]);

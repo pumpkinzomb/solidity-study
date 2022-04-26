@@ -2,11 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './index.css';
+import 'browser-solc';
 import App from './App';
 import StudyChapter1 from './study_chapter/chapter1';
 import StudyChapter2 from './study_chapter/chapter2';
 import StudyChapter3 from './study_chapter/chapter3';
 import StudyChapter4 from './study_chapter/chapter4';
+import StudyChapter5 from './study_chapter/chapter5';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -19,6 +21,7 @@ root.render(
                 <Route path="/chapter2" element={<StudyChapter2 />} />
                 <Route path="/chapter3" element={<StudyChapter3 />} />
                 <Route path="/chapter4" element={<StudyChapter4 />} />
+                <Route path="/chapter5" element={<StudyChapter5 />} />
             </Routes>
         </BrowserRouter>
     </React.StrictMode>,

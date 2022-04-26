@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Axios from 'axios';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -20,9 +21,11 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-import { ABI, CA } from './contract';
+import { CA } from './contract';
 import { TOKEN_ABI } from './tokenContract';
-import { sourceCode } from './SimpleBank.sol';
+
+import getCode from '@/hardhat/contracts/SimpleBank.sol';
+import getABI from '@/hardhat/artifacts/contracts/SimpleBank.sol/ZombBank.json';
 
 export const StyledDialogContent = styled(DialogContent)(
     (props) => `
@@ -34,8 +37,6 @@ const Web3 = require('web3');
 const web3 = new Web3(Web3.givenProvider || 'https://ropsten.infura.io/v3/a07cd96ad0bb435f9e750c8faa672052');
 
 let Contract;
-let PMPKT1_TOKEN;
-let ZMBT1_TOKEN;
 let TokenContract;
 const SimpleCounter = (props) => {
     const [loading, setLoading] = useState(false);
@@ -52,20 +53,25 @@ const SimpleCounter = (props) => {
     const [selectedToken, setSelectedToken] = useState(null);
     const [tokenAmount, setTokenAmount] = useState('0');
     const [isWithdraw, setIsWithdraw] = useState(false);
+    const [sourceCode, setSourceCode] = useState('');
 
     useEffect(() => {
         getAccounts();
+        getSourceCode();
     }, []);
+
+    const getSourceCode = async () => {
+        const response = await Axios(getCode);
+        setSourceCode(response.data);
+    };
 
     const getAccounts = async () => {
         try {
             // await window.ethereum.enable();
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             const _account = await web3.eth.getAccounts();
-            // console.log('check', _account);
+            const ABI = getABI.abi;
             Contract = new web3.eth.Contract(ABI, CA);
-            // PMPKT1_TOKEN = new web3.eth.Contract(PMPKT1_ABI, PMPKT1_CA);
-            // ZMBT1_TOKEN = new web3.eth.Contract(PMPKT1_ABI, ZMBT1_CA);
             setAccount(_account[0]);
             getAllBankAssets(_account[0]);
         } catch (error) {
