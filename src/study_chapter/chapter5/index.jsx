@@ -34,6 +34,7 @@ const SimpleRemix = (props) => {
     const [compiler, setCompiler] = useState(null);
     const [compiledSourceCode, setCompiledSourceCode] = useState(null);
     const [deployed, setDeployed] = useState(null);
+    const [errors, setErrors] = useState([]);
 
     useEffect(() => {
         getAccounts();
@@ -109,6 +110,7 @@ const SimpleRemix = (props) => {
         if (deployed) {
             setDeployed(null);
         }
+        setErrors([]);
         setSourceCode(event.target.value);
     };
 
@@ -118,9 +120,14 @@ const SimpleRemix = (props) => {
         }
         if (compiler) {
             const compiledCode = compiler.compile(sourceCode, 1);
-            // console.log('check compile', compiledCode);
-            compiledCode.contractName = Object.keys(compiledCode.contracts).map((item) => item)[0];
-            setCompiledSourceCode(compiledCode);
+            console.log('check compile', compiledCode);
+            if (compiledCode.errors) {
+                setErrors(compiledCode.errors);
+                setCompiledSourceCode(null);
+            } else {
+                compiledCode.contractName = Object.keys(compiledCode.contracts).map((item) => item)[0];
+                setCompiledSourceCode(compiledCode);
+            }
         } else {
             setCompiledSourceCode(null);
         }
@@ -168,6 +175,11 @@ const SimpleRemix = (props) => {
 
         setLoading(false);
     };
+    const handleKeyPress = (event) => {
+        if (event.key === 'Tab') {
+            event.preventDefault();
+        }
+    };
 
     return (
         <Box p={2}>
@@ -175,12 +187,14 @@ const SimpleRemix = (props) => {
                 <Stack spacing={2} direction="row">
                     <TextField
                         id="outlined-multiline-static"
-                        label="Your Solidity..."
+                        label="Solidity Code"
                         sx={{ width: '50%' }}
                         multiline
                         rows={20}
                         value={sourceCode}
                         onChange={handleChangeSourceCode}
+                        onKeyDown={handleKeyPress}
+                        error={errors.length > 0 ? true : false}
                     />
                     <Stack spacing={2} direction="column" sx={{ width: '50%' }}>
                         <Typography variant="subtitle">Contract Name:</Typography>
@@ -197,6 +211,16 @@ const SimpleRemix = (props) => {
                             {compiledSourceCode &&
                                 compiledSourceCode.contracts[compiledSourceCode.contractName].interface}
                         </Typography>
+                        {errors.length > 0 && (
+                            <React.Fragment>
+                                <Typography variant="subtitle">Errors:</Typography>
+                                <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                                    {errors.map((item) => {
+                                        return item;
+                                    })}
+                                </Typography>
+                            </React.Fragment>
+                        )}
                     </Stack>
                 </Stack>
 
@@ -229,7 +253,7 @@ const SimpleRemix = (props) => {
                         variant="outlined"
                         onClick={handleCompileSubmit}
                         loading={loading}
-                        disabled={loading}
+                        disabled={loading || compiledSourceCode}
                     >
                         Compile
                     </LoadingButton>
