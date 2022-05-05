@@ -69,8 +69,8 @@ const UniswapV2 = (props) => {
     const [openCreatePool, setOpenCreatePool] = useState(false);
     const [createAtokenAddress, setCreateAtokenAddress] = useState('');
     const [createBtokenAddress, setCreateBtokenAddress] = useState('');
-    const [createAtokenSymbol, setCreatAtokenSymbol] = useState('None');
-    const [createBtokenSymbol, setCreatBtokenSymbol] = useState('None');
+    const [createAtokenSymbol, setCreateAtokenSymbol] = useState('None');
+    const [createBtokenSymbol, setCreateBtokenSymbol] = useState('None');
     const [createAtokenAmount, setCreateAtokenAmount] = useState('0');
     const [createAtokenMaxAmount, setCreateAtokenMaxAmount] = useState('0');
     const [createBtokenAmount, setCreateBtokenAmount] = useState('0');
@@ -627,9 +627,38 @@ const UniswapV2 = (props) => {
 
     const handleCloseCreatePool = () => {
         setOpenCreatePool(false);
+        setCreateAtokenSymbol('None');
+        setCreateBtokenSymbol('None');
+        setCreateAtokenAddress('');
+        setCreateBtokenAddress('');
+        setCreateAtokenAmount('0');
+        setCreateBtokenAmount('0');
+        setCreateAtokenMaxAmount('0');
+        setCreateBtokenMaxAmount('0');
     };
 
-    const handleCreatePoolSubmit = () => {};
+    const handleCreatePoolSubmit = async () => {
+        setLoading(true);
+        try {
+            await Uni_Router.methods
+                .addLiquidity(
+                    createAtokenAddress,
+                    createBtokenAddress,
+                    Web3.utils.toWei(createAtokenAmount, 'ether'),
+                    Web3.utils.toWei(createBtokenAmount, 'ether'),
+                    '10000000000000000',
+                    '10000000000000000',
+                    account,
+                )
+                .send({ from: account });
+            setLoading(false);
+            getAllpools(account);
+            handleCloseCreatePool();
+        } catch (error) {
+            setLoading(false);
+            console.log('error: ', error);
+        }
+    };
 
     const handleCreateAtokenAddressChange = async (event) => {
         const inputValue = event.target.value;
@@ -637,9 +666,11 @@ const UniswapV2 = (props) => {
         if (web3.utils.isAddress(inputValue)) {
             const TokenContract = new web3.eth.Contract(ERC20_ABI, inputValue);
             const getSymbol = await TokenContract.methods.symbol().call();
-            setCreatAtokenSymbol(getSymbol);
+            const maxAmount = await TokenContract.methods.balanceOf(account).call();
+            setCreateAtokenSymbol(getSymbol);
+            setCreateAtokenMaxAmount(Web3.utils.fromWei(maxAmount, 'ether'));
         } else {
-            setCreatAtokenSymbol('None');
+            setCreateAtokenSymbol('None');
         }
     };
 
@@ -649,14 +680,21 @@ const UniswapV2 = (props) => {
         if (web3.utils.isAddress(inputValue)) {
             const TokenContract = new web3.eth.Contract(ERC20_ABI, inputValue);
             const getSymbol = await TokenContract.methods.symbol().call();
-            setCreatBtokenSymbol(getSymbol);
+            const maxBmount = await TokenContract.methods.balanceOf(account).call();
+            setCreateBtokenSymbol(getSymbol);
+            setCreateBtokenMaxAmount(Web3.utils.fromWei(maxBmount, 'ether'));
         } else {
-            setCreatBtokenSymbol('None');
+            setCreateBtokenSymbol('None');
+            setCreateBtokenMaxAmount('0');
         }
     };
 
-    const handleCreateAtokenAmountChange = (event, newValue) => {};
-    const handleCreateBtokenAmountChange = (event, newValue) => {};
+    const handleCreateAtokenAmountChange = (event, newValue) => {
+        setCreateAtokenAmount(String(newValue));
+    };
+    const handleCreateBtokenAmountChange = (event, newValue) => {
+        setCreateBtokenAmount(String(newValue));
+    };
 
     return (
         <Box p={2}>
@@ -1020,6 +1058,7 @@ const UniswapV2 = (props) => {
                             value={createAtokenAddress}
                             onChange={handleCreateAtokenAddressChange}
                             disabled={loading}
+                            error={createAtokenAddress !== '' && createAtokenAddress === createBtokenAddress}
                         />
                         <Typography variant="body2" sx={{ marginLeft: 2, minWidth: '60px' }}>
                             {createAtokenSymbol}
@@ -1046,6 +1085,7 @@ const UniswapV2 = (props) => {
                             value={createBtokenAddress}
                             onChange={handleCreateBtokenAddressChange}
                             disabled={loading}
+                            error={createBtokenAddress !== '' && createAtokenAddress === createBtokenAddress}
                         />
                         <Typography variant="body2" sx={{ marginLeft: 2, minWidth: '60px' }}>
                             {createBtokenSymbol}
@@ -1073,7 +1113,9 @@ const UniswapV2 = (props) => {
                         disabled={
                             !web3.utils.isAddress(createAtokenAddress) ||
                             !web3.utils.isAddress(createBtokenAddress) ||
-                            createAtokenAddress === createBtokenAddress
+                            createAtokenAddress === createBtokenAddress ||
+                            Number(createAtokenAmount) === 0 ||
+                            Number(createBtokenAmount) === 0
                         }
                     >
                         Create New Pool
