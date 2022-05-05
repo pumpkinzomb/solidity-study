@@ -46,6 +46,12 @@ solidity를 공부하면서 만드는 간단한 dapp들 실습한다.
 
 -   간단한 solidity IDE
 
+6. Clone Uniswap v2
+
+-   Uniswap v2에서 blocktimestamp로 가격정보 oracle연동하는 부분제외하고 multipool부분만 구현
+-   핵심은 Router 컨트랙트로 Factory-Pair 컨트랙트로 multipool과 liquidity token을 제어하는 것.
+-   어려운 부분은 주석을 달아놓았음.
+
 [Check all this on Web](https://master.d23zmmhxqo18no.amplifyapp.com)
 
 -   metamask에서는 ropsten network로 바꿔서 테스트하세요.
