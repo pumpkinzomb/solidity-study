@@ -13,7 +13,6 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogTitle from '@mui/material/DialogTitle';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useStopwatch } from 'react-timer-hook';
-
 import { CA } from './contract';
 
 import getCode from '@/hardhat/contracts/SimpleCounter.sol';

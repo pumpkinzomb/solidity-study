@@ -184,44 +184,42 @@ const SimpleRemix = (props) => {
     return (
         <Box p={2}>
             <Paper sx={{ padding: 2, width: '100%', maxWidth: '900px' }} elevation={3}>
-                <Stack spacing={2} direction="row">
+                <Stack spacing={2} direction="row" sx={{ width: '100%' }}>
                     <TextField
                         id="outlined-multiline-static"
                         label="Solidity Code"
-                        sx={{ width: '50%' }}
                         multiline
                         rows={20}
                         value={sourceCode}
                         onChange={handleChangeSourceCode}
                         onKeyDown={handleKeyPress}
+                        fullWidth={'100%'}
                         error={errors.length > 0 ? true : false}
                     />
-                    <Stack spacing={2} direction="column" sx={{ width: '50%' }}>
-                        <Typography variant="subtitle">Contract Name:</Typography>
-                        <Typography variant="body2">
-                            {compiledSourceCode && compiledSourceCode.contractName.slice(1)}
-                        </Typography>
-                        <Typography variant="subtitle">Contract ByteCode:</Typography>
-                        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                            {compiledSourceCode &&
-                                compiledSourceCode.contracts[compiledSourceCode.contractName].bytecode}
-                        </Typography>
-                        <Typography variant="subtitle">Contract abi:</Typography>
-                        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                            {compiledSourceCode &&
-                                compiledSourceCode.contracts[compiledSourceCode.contractName].interface}
-                        </Typography>
-                        {errors.length > 0 && (
-                            <React.Fragment>
-                                <Typography variant="subtitle">Errors:</Typography>
-                                <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                                    {errors.map((item) => {
-                                        return item;
-                                    })}
-                                </Typography>
-                            </React.Fragment>
-                        )}
-                    </Stack>
+                    {compiledSourceCode && (
+                        <Stack spacing={2} direction="column" sx={{ width: '50%', minWidth: '40%' }}>
+                            <Typography variant="subtitle">Contract Name:</Typography>
+                            <Typography variant="body2">{compiledSourceCode.contractName.slice(1)}</Typography>
+                            <Typography variant="subtitle">Contract ByteCode:</Typography>
+                            <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                                {compiledSourceCode.contracts[compiledSourceCode.contractName].bytecode}
+                            </Typography>
+                            <Typography variant="subtitle">Contract abi:</Typography>
+                            <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                                {compiledSourceCode.contracts[compiledSourceCode.contractName].interface}
+                            </Typography>
+                            {errors.length > 0 && (
+                                <React.Fragment>
+                                    <Typography variant="subtitle">Errors:</Typography>
+                                    <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                                        {errors.map((item) => {
+                                            return item;
+                                        })}
+                                    </Typography>
+                                </React.Fragment>
+                            )}
+                        </Stack>
+                    )}
                 </Stack>
 
                 <Stack spacing={2} direction="row" sx={{ marginTop: 2 }}>

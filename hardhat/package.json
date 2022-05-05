@@ -10,6 +10,8 @@
     },
     "dependencies": {
         "@openzeppelin/contracts": "^4.5.0",
+        "@openzeppelin/upgrades": "^2.8.0",
+        "@uniswap/lib": "^4.0.1-alpha",
         "hardhat": "^2.9.3"
     },
     "scripts": {

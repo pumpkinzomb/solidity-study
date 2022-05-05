@@ -5,5 +5,7 @@
             "@/*": ["./src/*"],
             "@/hardhat/*": ["./hardhat/*"]
         }
-    }
+    },
+    "exclude": ["node_modules"],
+    "include": ["src/**/*"]
 }

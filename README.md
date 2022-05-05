@@ -34,6 +34,6 @@ solidity를 공부하면서 만드는 간단한 dapp들 실습한다.
 
 -   간단한 solidity IDE
 
-[Check all this on Web](https://master.d23zmmhxqo18no.amplifyapp.com/chapter4)
+[Check all this on Web](https://master.d23zmmhxqo18no.amplifyapp.com)
 
 -   metamask에서는 ropsten network로 바꿔서 테스트하세요.

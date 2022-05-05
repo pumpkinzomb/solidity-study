@@ -43,6 +43,11 @@ function App() {
                         <ListItemText primary="Chapter 5 (Simple Remix IDE)" />
                     </Link>
                 </StyledListItem>
+                <StyledListItem disablePadding>
+                    <Link to="/chapter6">
+                        <ListItemText primary="Chapter 6 (Uniswap V2)" />
+                    </Link>
+                </StyledListItem>
             </List>
         </Box>
     );
