@@ -10,6 +10,18 @@ solidity를 공부하면서 만드는 간단한 dapp들 실습한다.
     yarn install
 ```
 
+## How to set hardhat(solidity compile & deploy template)
+
+```
+    cd hardhat
+    yarn install
+
+    yarn hardhat compile  // if you want compile your contracts
+    yarn deploy '.. your deploy.js' // package.json에서 ropsten network로 설정함
+```
+
+## 실습중인 Chapter
+
 1. Counter dapp
 
 -   0으로 등록된 store 상태값을 트랜잭션으로 1을 가산, 감산할 수 있는 간단한 dapp
