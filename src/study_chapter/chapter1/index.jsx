@@ -54,12 +54,8 @@ const SimpleCounter = (props) => {
     };
 
     const getSourceCode = async () => {
-        const response = await axios(getCode, {
-            headers: {
-                'Content-Type': 'text/plain',
-            },
-        });
-        setSourceCode(response.data);
+        const response = await axios(getCode);
+        setSourceCode(`${response.data}`);
     };
 
     const getAccounts = async () => {
