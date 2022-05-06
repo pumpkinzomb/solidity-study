@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Axios from 'axios';
+import axios from 'axios';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
@@ -25,7 +25,7 @@ import { CA } from './contract';
 import { TOKEN_ABI } from './tokenContract';
 
 // import getCode from '@/hardhat/contracts/SimpleBank.sol';
-import getCode from './sols/SimpleBank.sol';
+import { sourceCode as getCode } from './SimpleBank.sol';
 import getABI from '@/hardhat/artifacts/contracts/SimpleBank.sol/ZombBank.json';
 
 export const StyledDialogContent = styled(DialogContent)(
@@ -62,8 +62,8 @@ const SimpleCounter = (props) => {
     }, []);
 
     const getSourceCode = async () => {
-        const response = await Axios(getCode);
-        setSourceCode(response.data);
+        // const response = await axios(getCode);
+        setSourceCode(getCode);
     };
 
     const getAccounts = async () => {

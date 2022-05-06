@@ -288,8 +288,8 @@
       ]
     },
     "/Users/felixzomb/Desktop/workspace/solidity-practice/hardhat/contracts/libraries/UniswapV2Library.sol": {
-      "lastModificationDate": 1651640706203,
-      "contentHash": "99954386942270eda3cb7b2bbcb6dd57",
+      "lastModificationDate": 1651641525762,
+      "contentHash": "c82ce9fec05b55c98d735c380d0faf6e",
       "sourceName": "contracts/libraries/UniswapV2Library.sol",
       "solcConfig": {
         "version": "0.8.8",
@@ -435,8 +435,8 @@
       ]
     },
     "/Users/felixzomb/Desktop/workspace/solidity-practice/hardhat/contracts/Uni_v2_Factory.sol": {
-      "lastModificationDate": 1651633109431,
-      "contentHash": "b5e12f123e651efd13d1373d3b4dffd7",
+      "lastModificationDate": 1651652429082,
+      "contentHash": "760acdefd41c4a1a5085ffb333122aee",
       "sourceName": "contracts/Uni_v2_Factory.sol",
       "solcConfig": {
         "version": "0.8.8",
@@ -472,8 +472,8 @@
       ]
     },
     "/Users/felixzomb/Desktop/workspace/solidity-practice/hardhat/contracts/Uni_v2_Router.sol": {
-      "lastModificationDate": 1651640811018,
-      "contentHash": "c4f7ff0fb2302e626e28b0238a5bb4dd",
+      "lastModificationDate": 1651840738374,
+      "contentHash": "6c328eb68981967a27eacd94f073a400",
       "sourceName": "contracts/Uni_v2_Router.sol",
       "solcConfig": {
         "version": "0.8.8",
@@ -545,6 +545,41 @@
       ],
       "artifacts": [
         "TransferHelper"
+      ]
+    },
+    "/Users/felixzomb/Desktop/workspace/solidity-practice/hardhat/contracts/WETH.sol": {
+      "lastModificationDate": 1651840489558,
+      "contentHash": "4751ab6a044deab14f8df86fbb45afb1",
+      "sourceName": "contracts/WETH.sol",
+      "solcConfig": {
+        "version": "0.8.8",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.8"
+      ],
+      "artifacts": [
+        "WETH9"
       ]
     }
   }

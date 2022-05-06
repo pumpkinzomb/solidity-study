@@ -1,3 +1,4 @@
+export const sourceCode = `
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.8;
 
@@ -18,6 +19,12 @@ contract UniswapV2Router02  {
 
     receive() external payable {
         assert(msg.sender == WETH); // only accept ETH via fallback from the WETH contract
+    }
+
+    function getReserves(address tokenA, address tokenB) public view returns (uint _reserve0, uint _reserve1) {
+        (uint reserveA, uint reserveB) = UniswapV2Library.getReserves(factory, tokenA, tokenB);
+        _reserve0 = reserveA;
+        _reserve1 = reserveB;
     }
 
     function getFactoryReserves(address tokenA, address tokenB) public view returns (uint _reserve0, uint _reserve1) {
@@ -274,3 +281,4 @@ contract UniswapV2Router02  {
         return UniswapV2Library.getAmountsIn(factory, amountOut, path);
     }
 }
+`;

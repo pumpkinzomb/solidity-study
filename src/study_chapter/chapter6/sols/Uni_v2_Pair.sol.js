@@ -1,3 +1,4 @@
+export const sourceCode = `
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import './Uni_v2_ERC20.sol';
@@ -149,3 +150,4 @@ contract UniswapV2Pair is UniswapV2ERC20 {
         _update(IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)));
     }
 }
+`;

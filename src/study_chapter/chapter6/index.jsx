@@ -1,7 +1,7 @@
 /* global BigInt */
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+// import axios from 'axios';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -24,11 +24,14 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import getRouterCode from './sols/Uni_v2_Router.sol';
-import getFactoryCode from './sols/Uni_v2_Factory.sol';
-import getPairCode from './sols/Uni_v2_Pair.sol';
+import { sourceCode as getRouterCode } from './sols/Uni_v2_Router.sol';
+import { sourceCode as getFactoryCode } from './sols/Uni_v2_Factory.sol';
+import { sourceCode as getPairCode } from './sols/Uni_v2_Pair.sol';
 
-import { Factory_ABI, Factory_CA, Pair_ABI, ERC20_ABI, Router_ABI, Router_CA, WETH_CA, WETH_ABI } from './contract';
+import { Factory_CA, Router_CA, WETH_CA, ERC20_ABI, WETH_ABI } from './contract';
+import getFactoryABI from '@/hardhat/artifacts/contracts/Uni_v2_Factory.sol/UniswapV2Factory.json';
+import getPairABI from '@/hardhat/artifacts/contracts/Uni_v2_Pair.sol/UniswapV2Pair.json';
+import getRouterABI from '@/hardhat/artifacts/contracts/Uni_v2_Router.sol/UniswapV2Router02.json';
 
 export const StyledDialogContent = styled(DialogContent)(
     (props) => `
@@ -39,8 +42,13 @@ export const StyledDialogContent = styled(DialogContent)(
 const Web3 = require('web3');
 const web3 = new Web3(Web3.givenProvider || 'https://ropsten.infura.io/v3/a07cd96ad0bb435f9e750c8faa672052');
 
+const Factory_ABI = getFactoryABI.abi;
+const Pair_ABI = getPairABI.abi;
+const Router_ABI = getRouterABI.abi;
+
 let Uni_Router;
 let Uni_Factory;
+
 const UniswapV2 = (props) => {
     const [loading, setLoading] = useState(false);
     const [account, setAccount] = useState(null);
@@ -93,8 +101,9 @@ const UniswapV2 = (props) => {
                         : item === 'pair'
                         ? getPairCode
                         : '';
-                const response = await axios(code);
-                newCodes[`${item}`] = response.data;
+                // const response = await axios(code);
+                // console.log('??', response.data);
+                newCodes[`${item}`] = code;
             }),
         );
         setSourceCode(newCodes);
@@ -149,8 +158,10 @@ const UniswapV2 = (props) => {
             await window.ethereum.request({ method: 'eth_requestAccounts' });
             const _account = await web3.eth.getAccounts();
             // console.log('check', _account);
+
             Uni_Factory = new web3.eth.Contract(Factory_ABI, Factory_CA);
             Uni_Router = new web3.eth.Contract(Router_ABI, Router_CA);
+
             // Contract = new web3.eth.Contract(ABI, CA);
             setAccount(_account[0]);
             getAllpools(_account[0]);
@@ -226,6 +237,7 @@ const UniswapV2 = (props) => {
     };
 
     const handleLiquidityOpen = async (pool) => {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         setSelectedTab(0);
         getOwnLiquidity(account, pool.pair);
         setSelectedPool(pool);
@@ -417,7 +429,8 @@ const UniswapV2 = (props) => {
         }
     };
 
-    const handleOpenSwapToken = (pool) => {
+    const handleOpenSwapToken = async (pool) => {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         setSelectedSwapTokenTab(0);
         getOwnLiquidity(account, pool.pair);
         setSelectedPool(pool);
@@ -612,7 +625,8 @@ const UniswapV2 = (props) => {
         setSelectedSwapTokenTab(newValue);
     };
 
-    const handleOpenCreatePool = () => {
+    const handleOpenCreatePool = async () => {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         setOpenCreatePool(true);
     };
 
@@ -710,6 +724,7 @@ const UniswapV2 = (props) => {
     };
 
     const handleOpenETHSwapToken = async (event) => {
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
         setSelectedSwapTokenTab(0);
         setOpenETHSwapToken(true);
         let balance = await web3.eth.getBalance(account);

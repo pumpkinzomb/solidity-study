@@ -15,7 +15,8 @@ import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useStopwatch } from 'react-timer-hook';
 import { CA } from './contract';
 
-import getCode from '@/hardhat/contracts/SimpleCounter.sol';
+// import getCode from '@/hardhat/contracts/SimpleCounter.sol';
+import { sourceCode as getCode } from './SimpleCounter.sol';
 import getABI from '@/hardhat/artifacts/contracts/SimpleCounter.sol/SimpleCounter.json';
 
 export const StyledDialogContent = styled(DialogContent)(
@@ -54,8 +55,8 @@ const SimpleCounter = (props) => {
     };
 
     const getSourceCode = async () => {
-        const response = await axios(getCode);
-        setSourceCode(`${response.data}`);
+        // const response = await axios(getCode);
+        setSourceCode(getCode);
     };
 
     const getAccounts = async () => {

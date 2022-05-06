@@ -1,3 +1,4 @@
+export const sourceCode = `
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 import './Uni_v2_Pair.sol';
@@ -40,3 +41,4 @@ contract UniswapV2Factory {
         emit PairCreated(token0, token1, pair, allPairs.length);
     }
 }
+`;
