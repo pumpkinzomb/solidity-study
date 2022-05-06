@@ -51,6 +51,8 @@ solidity를 공부하면서 만드는 간단한 dapp들 실습한다.
 -   Uniswap v2에서 blocktimestamp로 가격정보 oracle연동하는 부분제외하고 multipool부분만 구현
 -   핵심은 Router 컨트랙트로 Factory-Pair 컨트랙트로 multipool과 liquidity token을 제어하는 것.
 -   어려운 부분은 주석을 달아놓았음.
+-   [deployed Uni2_Router](https://ropsten.etherscan.io/address/0x535bEc5966748bA34371664E914227B786F20999)
+-   [deployed Uni2_Factory](https://ropsten.etherscan.io/address/0x1265A95a383Ea034E0b0149EA21660422A750893)
 
 [Check all this on Web](https://master.d23zmmhxqo18no.amplifyapp.com)
 
