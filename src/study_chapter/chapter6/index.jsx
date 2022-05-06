@@ -24,9 +24,9 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import getRouterCode from '@/hardhat/contracts/Uni_v2_Router.sol';
-import getFactoryCode from '@/hardhat/contracts/Uni_v2_Factory.sol';
-import getPairCode from '@/hardhat/contracts/Uni_v2_Pair.sol';
+import getRouterCode from './sols/Uni_v2_Router.sol';
+import getFactoryCode from './sols/Uni_v2_Factory.sol';
+import getPairCode from './sols/Uni_v2_Pair.sol';
 
 import { Factory_ABI, Factory_CA, Pair_ABI, ERC20_ABI, Router_ABI, Router_CA, WETH_CA, WETH_ABI } from './contract';
 

@@ -24,7 +24,8 @@ import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { CA } from './contract';
 import { TOKEN_ABI } from './tokenContract';
 
-import getCode from '@/hardhat/contracts/SimpleBank.sol';
+// import getCode from '@/hardhat/contracts/SimpleBank.sol';
+import getCode from './sols/SimpleBank.sol';
 import getABI from '@/hardhat/artifacts/contracts/SimpleBank.sol/ZombBank.json';
 
 export const StyledDialogContent = styled(DialogContent)(

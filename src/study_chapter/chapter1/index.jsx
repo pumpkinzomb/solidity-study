@@ -15,7 +15,8 @@ import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useStopwatch } from 'react-timer-hook';
 import { CA } from './contract';
 
-import getCode from '@/hardhat/contracts/SimpleCounter.sol';
+import getCode from './sols/SimpleCounter.sol';
+// import getCode from '@/hardhat/contracts/SimpleCounter.sol';
 import getABI from '@/hardhat/artifacts/contracts/SimpleCounter.sol/SimpleCounter.json';
 
 export const StyledDialogContent = styled(DialogContent)(
