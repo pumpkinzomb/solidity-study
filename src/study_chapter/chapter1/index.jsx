@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { styled } from '@mui/material/styles';
-import Axios from 'axios';
+import axios from 'axios';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -54,7 +54,11 @@ const SimpleCounter = (props) => {
     };
 
     const getSourceCode = async () => {
-        const response = await Axios(getCode);
+        const response = await axios(getCode, {
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+        });
         setSourceCode(response.data);
     };
 
@@ -136,7 +140,7 @@ const SimpleCounter = (props) => {
             <Dialog open={open} onClose={handleClose} maxWidth={'xl'} fullWidth={true}>
                 <DialogTitle>Source Code (SimpleCounter.sol)</DialogTitle>
                 <StyledDialogContent sx={{ padding: 0 }}>
-                    <SyntaxHighlighter language="javascript" style={vs2015} showLineNumbers={true} wrapLongLines={true}>
+                    <SyntaxHighlighter language="javascript" style={vs2015} showLineNumbers={true}>
                         {sourceCode}
                     </SyntaxHighlighter>
                 </StyledDialogContent>
