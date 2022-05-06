@@ -21,15 +21,13 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import useClipboard from 'react-use-clipboard';
 import Tooltip from '@mui/material/Tooltip';
 
 import getRouterCode from '@/hardhat/contracts/Uni_v2_Router.sol';
 import getFactoryCode from '@/hardhat/contracts/Uni_v2_Factory.sol';
 import getPairCode from '@/hardhat/contracts/Uni_v2_Pair.sol';
-import { Factory_ABI, Factory_CA, Pair_ABI, ERC20_ABI, Router_ABI, Router_CA } from './contract';
-import { timelineClasses } from '@mui/lab';
-const { ABI, CA, TOKEN_ABI } = {};
+
+import { Factory_ABI, Factory_CA, Pair_ABI, ERC20_ABI, Router_ABI, Router_CA, WETH_CA, WETH_ABI } from './contract';
 
 export const StyledDialogContent = styled(DialogContent)(
     (props) => `
@@ -40,9 +38,7 @@ export const StyledDialogContent = styled(DialogContent)(
 const Web3 = require('web3');
 const web3 = new Web3(Web3.givenProvider || 'https://ropsten.infura.io/v3/a07cd96ad0bb435f9e750c8faa672052');
 
-let Contract;
 let Uni_Router;
-let TokenContract;
 let Uni_Factory;
 const UniswapV2 = (props) => {
     const [loading, setLoading] = useState(false);
@@ -75,6 +71,9 @@ const UniswapV2 = (props) => {
     const [createAtokenMaxAmount, setCreateAtokenMaxAmount] = useState('0');
     const [createBtokenAmount, setCreateBtokenAmount] = useState('0');
     const [createBtokenMaxAmount, setCreateBtokenMaxAmount] = useState('0');
+    const [openETHSwapToken, setOpenETHSwapToken] = useState(false);
+    const [ethAmount, setETHAmount] = useState('0');
+    const [wethAmount, setWETHAmount] = useState('0');
 
     useEffect(() => {
         getAccounts();
@@ -141,18 +140,6 @@ const UniswapV2 = (props) => {
                 return item;
             }),
         );
-    };
-
-    const handleSetPool = async (tokenA, tokenB) => {
-        setLoading(true);
-        try {
-            await Contract.methods.setPool(tokenA, tokenB).send({
-                from: account,
-            });
-        } catch (error) {
-            console.log(error);
-        }
-        setLoading(false);
     };
 
     const getAccounts = async () => {
@@ -640,6 +627,27 @@ const UniswapV2 = (props) => {
     const handleCreatePoolSubmit = async () => {
         setLoading(true);
         try {
+            let TokenContract = new web3.eth.Contract(ERC20_ABI, createAtokenAddress);
+            let checkAtoken = await TokenContract.methods.allowance(account, Router_CA).call();
+            // console.log('checkAtoken', Web3.utils.fromWei(checkAtoken, 'ether'));
+            if (Number(checkAtoken) < 1) {
+                await TokenContract.methods
+                    .approve(Router_CA, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                    .send({
+                        from: account,
+                    });
+                // throw 'token A not allowed';
+            }
+            TokenContract = new web3.eth.Contract(ERC20_ABI, createBtokenAddress);
+            let checkBtoken = await TokenContract.methods.allowance(account, Router_CA).call();
+            if (Number(checkBtoken) < 1) {
+                await TokenContract.methods
+                    .approve(Router_CA, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                    .send({
+                        from: account,
+                    });
+                // throw 'token B not allowed';
+            }
             await Uni_Router.methods
                 .addLiquidity(
                     createAtokenAddress,
@@ -692,8 +700,73 @@ const UniswapV2 = (props) => {
     const handleCreateAtokenAmountChange = (event, newValue) => {
         setCreateAtokenAmount(String(newValue));
     };
+
     const handleCreateBtokenAmountChange = (event, newValue) => {
         setCreateBtokenAmount(String(newValue));
+    };
+
+    const handleOpenETHSwapToken = async (event) => {
+        setSelectedSwapTokenTab(0);
+        setOpenETHSwapToken(true);
+        let balance = await web3.eth.getBalance(account);
+        balance = Web3.utils.fromWei(balance, 'ether');
+        balance = String(Number(balance).toFixed(2));
+        console.log('my eth: ', balance);
+        setSelectedMyATokenBalance(balance);
+        balance = await getTokenBalance(account, WETH_CA);
+        balance = String(Number(balance).toFixed(2));
+        console.log('my weth: ', balance);
+        setSelectedMyBTokenBalance(balance);
+    };
+
+    const handleCloseETHSwapToken = () => {
+        setOpenETHSwapToken(false);
+        setETHAmount('0');
+        setWETHAmount('0');
+        setAtoBSlippage(0);
+        setBtoASlippage(0);
+        setSelectedMyATokenBalance('0');
+        setSelectedMyBTokenBalance('0');
+    };
+
+    const handleSwapETHSliderChange = (event, newValue) => {
+        setETHAmount(String(newValue));
+    };
+
+    const handleSwapWETHSliderChange = (event, newValue) => {
+        setWETHAmount(String(newValue));
+    };
+
+    const handleSwapETHtokenSubmit = async () => {
+        setLoading(true);
+        const TokenContract = new web3.eth.Contract(WETH_ABI, WETH_CA);
+        let checkWETHtoken = await TokenContract.methods.allowance(account, Router_CA).call();
+        console.log('checkWETH allowed: ', Web3.utils.fromWei(checkWETHtoken, 'ether'));
+        if (Number(checkWETHtoken) < 1) {
+            await TokenContract.methods
+                .approve(Router_CA, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff')
+                .send({
+                    from: account,
+                });
+            // throw 'token B not allowed';
+        }
+        try {
+            if (selectedSwapTokenTab === 0) {
+                const _ethAmount = Web3.utils.toWei(ethAmount, 'ether');
+                console.log('checkETHAmount:', _ethAmount);
+                await TokenContract.methods.deposit().send({ from: account, value: _ethAmount });
+            } else if (selectedSwapTokenTab === 1) {
+                const _wethAmount = Web3.utils.toWei(wethAmount, 'ether');
+                console.log('checkWETHAmount:', _wethAmount);
+                await TokenContract.methods.withdraw(_wethAmount).send({ from: account });
+            }
+            setLoading(false);
+            getAllpools(account);
+            handleCloseETHSwapToken();
+        } catch (error) {
+            setLoading(false);
+            console.log(error);
+        }
     };
 
     return (
@@ -730,9 +803,36 @@ const UniswapV2 = (props) => {
                     Setting Pool
                 </LoadingButton>
             </Stack>
+            <Stack direction="row" sx={{ paddingBottom: 2 }} spacing={2} alignItems={'center'}>
+                <Typography variant="h6" alignItems={'center'}>
+                    Pool #0 :
+                </Typography>
+                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ paddingRight: 2 }}>
+                    ETH
+                </Stack>
+                {' / '}
+                <Stack direction="row" spacing={2} alignItems={'center'} sx={{ marginRight: 2 }}>
+                    WETH
+                    <CopyToClipboard text={WETH_CA}>
+                        <Tooltip title={WETH_CA}>
+                            <IconButton aria-label={`Copy WETH Address.`}>
+                                <ContentCopyIcon fontSize="small" />
+                            </IconButton>
+                        </Tooltip>
+                    </CopyToClipboard>
+                </Stack>
+                <Button
+                    variant="contained"
+                    onClick={() => handleOpenETHSwapToken()}
+                    disabled={loading}
+                    sx={{ textTransform: 'none' }}
+                >
+                    Swap Token
+                </Button>
+            </Stack>
             {poolList.map((item, index) => {
                 return (
-                    <Box key={index}>
+                    <Box key={index} sx={{ paddingTop: `2rem` }}>
                         <Stack direction="row" sx={{ paddingBottom: 2 }} spacing={2} alignItems={'center'}>
                             <Typography variant="h6" alignItems={'center'}>
                                 Pool #{index + 1} :
@@ -1123,6 +1223,82 @@ const UniswapV2 = (props) => {
                     <LoadingButton
                         variant="contained"
                         onClick={handleCloseCreatePool}
+                        loading={loading}
+                        disabled={loading}
+                    >
+                        Close
+                    </LoadingButton>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={openETHSwapToken}
+                onClose={() => {
+                    !loading && handleCloseETHSwapToken();
+                }}
+            >
+                <DialogTitle>Swap Tokens</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                        <Tabs
+                            value={selectedSwapTokenTab}
+                            onChange={handleSwapTokenTabSelect}
+                            aria-label="basic tabs example"
+                        >
+                            <Tab label={`ETH to WETH`} />
+                            <Tab label={`WETH to ETH`} />
+                        </Tabs>
+                    </Box>
+                    {selectedSwapTokenTab === 0 ? (
+                        <React.Fragment>
+                            <Stack direction="row" sx={{ marginTop: 4 }} alignItems={'center'}>
+                                <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
+                                    ETH:
+                                </Typography>
+                                <Slider
+                                    aria-label={'ETH'}
+                                    value={Number(ethAmount)}
+                                    valueLabelDisplay="auto"
+                                    onChange={handleSwapETHSliderChange}
+                                    step={0.1}
+                                    max={Number(selectedMyATokenBalance)}
+                                    disabled={loading}
+                                />
+                            </Stack>
+                        </React.Fragment>
+                    ) : (
+                        <React.Fragment>
+                            <Stack direction="row" alignItems={'center'} sx={{ paddingTop: 2 }}>
+                                <Typography variant="body2" sx={{ marginRight: 2, minWidth: '60px' }}>
+                                    WETH:
+                                </Typography>
+                                <Slider
+                                    aria-label={'WETH'}
+                                    value={Number(wethAmount)}
+                                    valueLabelDisplay="auto"
+                                    onChange={handleSwapWETHSliderChange}
+                                    step={0.1}
+                                    max={Number(selectedMyBTokenBalance)}
+                                    disabled={loading}
+                                />
+                            </Stack>
+                        </React.Fragment>
+                    )}
+                </DialogContent>
+                <DialogActions sx={{ padding: 2 }}>
+                    <LoadingButton
+                        variant="contained"
+                        onClick={handleSwapETHtokenSubmit}
+                        loading={loading}
+                        disabled={
+                            (selectedSwapTokenTab === 0 && Number(ethAmount) === 0) ||
+                            (selectedSwapTokenTab === 1 && Number(wethAmount) === 0)
+                        }
+                    >
+                        Swap Tokens
+                    </LoadingButton>
+                    <LoadingButton
+                        variant="contained"
+                        onClick={handleCloseETHSwapToken}
                         loading={loading}
                         disabled={loading}
                     >
