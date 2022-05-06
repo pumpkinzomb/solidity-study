@@ -15,8 +15,7 @@ import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { useStopwatch } from 'react-timer-hook';
 import { CA } from './contract';
 
-import getCode from './sols/SimpleCounter.sol';
-// import getCode from '@/hardhat/contracts/SimpleCounter.sol';
+import getCode from '@/hardhat/contracts/SimpleCounter.sol';
 import getABI from '@/hardhat/artifacts/contracts/SimpleCounter.sol/SimpleCounter.json';
 
 export const StyledDialogContent = styled(DialogContent)(
@@ -137,7 +136,7 @@ const SimpleCounter = (props) => {
             <Dialog open={open} onClose={handleClose} maxWidth={'xl'} fullWidth={true}>
                 <DialogTitle>Source Code (SimpleCounter.sol)</DialogTitle>
                 <StyledDialogContent sx={{ padding: 0 }}>
-                    <SyntaxHighlighter language="javascript" style={vs2015} showLineNumbers={true}>
+                    <SyntaxHighlighter language="javascript" style={vs2015} showLineNumbers={true} wrapLongLines={true}>
                         {sourceCode}
                     </SyntaxHighlighter>
                 </StyledDialogContent>
