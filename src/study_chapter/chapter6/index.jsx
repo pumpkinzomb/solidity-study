@@ -22,6 +22,7 @@ import Tab from '@mui/material/Tab';
 import { vs2015 } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Tooltip from '@mui/material/Tooltip';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import getRouterCode from '@/hardhat/contracts/Uni_v2_Router.sol';
 import getFactoryCode from '@/hardhat/contracts/Uni_v2_Factory.sol';
@@ -167,6 +168,7 @@ const UniswapV2 = (props) => {
     };
 
     const getAllpools = async (_account) => {
+        setLoading(true);
         try {
             const poolLength = await Uni_Factory.methods.allPairsLength().call();
 
@@ -206,8 +208,10 @@ const UniswapV2 = (props) => {
             );
             setPoolList(dividePair);
             console.log('poolList', dividePair);
+            setLoading(false);
         } catch (error) {
             console.log('error: ', error);
+            setLoading(false);
         }
     };
 
@@ -802,6 +806,7 @@ const UniswapV2 = (props) => {
                 <LoadingButton variant="contained" onClick={() => handleOpenCreatePool()} loading={loading}>
                     Setting Pool
                 </LoadingButton>
+                {loading && <CircularProgress />}
             </Stack>
             <Stack direction="row" sx={{ paddingBottom: 2 }} spacing={2} alignItems={'center'}>
                 <Typography variant="h6" alignItems={'center'}>
