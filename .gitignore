@@ -2,7 +2,6 @@
 
 # dependencies
 /hardhat/node_modules
-/hardhat/artifacts
 /node_modules
 /.pnp
 .pnp.js
